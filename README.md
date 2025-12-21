@@ -15,10 +15,12 @@ A cloud-native AWS architecture was implemented:
 - Amazon SageMaker for model development and evaluation
 - Power BI for portfolio monitoring and strategy simulation
 
-An end-to-end architecture diagram is provided in the `architecture/` folder.
+![AWS Credit Risk Architecture](architecture/aws_architecture.png)
 
 ## Modeling & Calibration
-Multiple classification models were evaluated, including Logistic Regression, Support Vector Machines, and Random Forests. Logistic Regression was selected as the production model due to its interpretability, stability, and alignment with industry best practices in credit risk modeling.
+Multiple classification models were evaluated, including Logistic Regression, Support Vector Machines, and Random Forests. Logistic Regression was selected as the final model due to its interpretability, stability, and alignment with industry best practices in credit risk modeling.
+
+![Models In Out](notebook/modeling/models_in_out.png)
 
 Raw model outputs were calibrated using Platt Scaling to ensure predicted probabilities align with observed default rates. Calibration quality was assessed using Brier Score and calibration curves.
 
@@ -35,7 +37,7 @@ Interactive Power BI dashboards provide portfolio-level and segment-level insigh
 Dashboard overview are available in `dashboard/screenshots/`.
 
 ## Key Results
-- AUC ≈ 0.74 with stable validation performance
+- AUC ≈ 73% with stable validation performance
 - Well-calibrated PDs across score bands
 - Approving Bands A–C yields ~59% approval rate with average PD ≈ 3.7%
 - Expanding to Band D increases approval but materially raises expected defaults
