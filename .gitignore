@@ -1,1 +1,12 @@
 dashboards/*.pbix
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.env
+.DS_Store
+.vscode/
+.idea/
+data/raw/
+data/processed/
+*.parquet
+*.csv
