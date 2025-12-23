@@ -20,7 +20,7 @@ A cloud-native AWS architecture was implemented:
 ## Modeling & Calibration
 Multiple classification models were evaluated, including Logistic Regression, Support Vector Machines, and Random Forests. Logistic Regression was selected as the final model due to its interpretability, stability, and alignment with industry best practices in credit risk modeling.
 
-![Models In Out](notebooks/modeling/models_in_out.png)
+![Models In Out](architecture/models_in_out.png)
 
 Raw model outputs were calibrated using Platt Scaling to ensure predicted probabilities align with observed default rates. Calibration quality was assessed using Brier Score and calibration curves.
 
@@ -34,7 +34,7 @@ Interactive Power BI dashboards provide portfolio-level and segment-level insigh
 - Approved vs rejected populations under different strategies
 - Risk concentration across segments
 
-Dashboard overview are available in `dashboard/screenshots/`.
+Dashboard overview are available in `dashboards/screenshots/`.
 
 ## Key Results
 - AUC ≈ 73% with stable validation performance
@@ -51,4 +51,4 @@ See folder structure for report, notebooks, architecture, and dashboard artifact
 - Extend the framework to expected loss modeling (PD × LGD × EAD)
 
 ## Disclaimer
-This project uses synthetic data inspired by real-world credit portfolios. All results are illustrative and intended for educational and portfolio demonstration purposes only.
+This project uses data inspired by Home Credit Default Risk (Kaggle). All results are illustrative and intended for educational and portfolio demonstration purposes only.
