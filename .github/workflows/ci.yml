@@ -20,6 +20,9 @@ jobs:
           pip install -U pytest ruff
           pip install -U pandas numpy scikit-learn pyarrow joblib typer rich fsspec s3fs
 
+      - name: Set PYTHONPATH to src
+        run: echo "PYTHONPATH=$(pwd)/src" >> $GITHUB_ENV
+
       - name: Ruff
         run: ruff check .
 
