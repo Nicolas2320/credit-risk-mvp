@@ -10,7 +10,7 @@ __pycache__/
 data/raw/
 data/processed/
 *.parquet
-*.csv
+
 *.egg-info/
 
 # Jupyter
@@ -23,6 +23,8 @@ data/processed/
 .idea/
 *.zip
 
-# Artifacts
+# Artifacts and outputs
 artifacts/
 *.joblib
+outputs/
+*.csv

@@ -4,7 +4,11 @@ from sklearn.base import BaseEstimator
 import joblib
 import s3fs
 import json
+from pathlib import Path
 
+def ensure_local_dir(dir_path: str) -> None:
+    if not dir_path.startswith("s3://"):
+        Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 def _default_storage_options(path: str, storage_options: dict | None) -> dict | None:
     if storage_options is not None:
@@ -28,9 +32,9 @@ def read_joblib(path: str, storage_options: dict | None = None) -> dict:
     else:
         return joblib.load(path) 
 
-
 def write_csv(df: pd.DataFrame, path: str, storage_options: dict | None = None) -> None:
     opts = _default_storage_options(path, storage_options)
+
     df.to_csv(path, index=False, storage_options=opts)
 
 def write_joblib(model: BaseEstimator, path: str, storage_options: dict | None = None) -> None:
@@ -52,3 +56,6 @@ def write_json(data: dict, path: str, storage_options: dict | None = None) -> No
     else:
         with open(path, 'w', encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+
+def join_uri(base: str, name: str) -> str:
+    return base.rstrip("/") + "/" + name

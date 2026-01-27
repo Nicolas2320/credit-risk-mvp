@@ -7,7 +7,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, brier_score_loss
 
-from credit_risk.io import read_parquet, write_joblib, write_json
+from credit_risk.io import read_parquet, write_joblib, write_json, ensure_local_dir, join_uri
 from credit_risk.calibrate import PlattCalibrator
 from credit_risk.logging_utils import get_logger, log_event
 
@@ -19,6 +19,7 @@ def train_pipeline(
     calib_size: float = 0.2,
 ):
     logger = get_logger()
+    ensure_local_dir(artifacts_dir)
 
     df = read_parquet(input_path)
 
@@ -26,7 +27,7 @@ def train_pipeline(
     X_train = df.drop(["SK_ID_CURR", "TARGET", "bucket_id"], axis=1)
     feature_cols = list(X_train.columns)
 
-    categorical_features = (X_train.select_dtypes(include='object').copy()).columns
+    categorical_features = (X_train.select_dtypes(include=["object", "string", "category", "bool"]).copy()).columns
 
     numerical_features = (X_train.select_dtypes(include='number').copy()).columns
 
@@ -76,9 +77,9 @@ def train_pipeline(
             "feature_spec": {"numeric": numerical_features, "categorical": categorical_features},
             "drop_cols_train": sorted([c for c in ["SK_ID_CURR", "TARGET", "bucket_id"] if c in df.columns]),
         },
-        artifacts_dir + "model.joblib",
+        join_uri(artifacts_dir, "model.joblib"),
     )
-    write_joblib(platt, artifacts_dir + "platt.joblib")
+    write_joblib(platt, join_uri(artifacts_dir, "platt.joblib"))
 
     summary_data = {
         "input_path": input_path,
@@ -88,7 +89,7 @@ def train_pipeline(
         "metrics": metrics,
     }
 
-    write_json(summary_data, artifacts_dir + "run_summary.json")
+    write_json(summary_data, join_uri(artifacts_dir, "run_summary.json"))
 
     log_event(logger, "train_done", **metrics)
     return metrics
