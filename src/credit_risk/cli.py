@@ -1,5 +1,4 @@
 import typer
-from pathlib import Path
 from credit_risk.train import train_pipeline
 from credit_risk.score import score_pipeline
 

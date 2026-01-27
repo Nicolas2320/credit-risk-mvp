@@ -1,4 +1,4 @@
-    # End-to-End Credit Risk Modeling & Strategy Simulation
+# End-to-End Credit Risk Modeling & Strategy Simulation
 
 ## Overview
 This project implements an end-to-end credit risk analytics framework to estimate the Probability of Default (PD) for retail loan applicants and translate model outputs into actionable credit decisions. The solution covers the full lifecycle from data ingestion and feature engineering to modeling, calibration, score banding, and portfolio-level strategy simulation.

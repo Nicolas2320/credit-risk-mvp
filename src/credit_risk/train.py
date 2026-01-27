@@ -1,8 +1,4 @@
 from __future__ import annotations
-from pathlib import Path
-import json
-import numpy as np
-import pandas as pd
 
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -11,11 +7,9 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, brier_score_loss
 
-from credit_risk.io import read_parquet
+from credit_risk.io import read_parquet, write_joblib, write_json
 from credit_risk.calibrate import PlattCalibrator
 from credit_risk.logging_utils import get_logger, log_event
-
-import joblib
 
 def train_pipeline(
     input_path: str,
@@ -28,12 +22,13 @@ def train_pipeline(
 
     df = read_parquet(input_path)
 
-    y = df["TARGET"].astype(int).values
-    X = df.drop(["SK_ID_CURR", "TARGET"], axis=1)
+    y_train = df["TARGET"].astype(int).values
+    X_train = df.drop(["SK_ID_CURR", "TARGET", "bucket_id"], axis=1)
+    feature_cols = list(X_train.columns)
 
-    categorical_features = (X.select_dtypes(include='object').copy()).columns
+    categorical_features = (X_train.select_dtypes(include='object').copy()).columns
 
-    numerical_features = (X.select_dtypes(include='number').copy()).columns
+    numerical_features = (X_train.select_dtypes(include='number').copy()).columns
 
     preprocess = ColumnTransformer(
         transformers=[
@@ -54,10 +49,10 @@ def train_pipeline(
     model = Pipeline(steps=[("preprocess", preprocess), ("model", base_model)])
 
     X_tr, X_cal, y_tr, y_cal = train_test_split(
-        X, y, test_size=calib_size, random_state=random_state, stratify=y
+        X_train, y_train, test_size=calib_size, random_state=random_state, stratify=y_train
     )
 
-    log_event(logger, "train_start", rows=len(df), cols=X.shape[1], alpha=alpha)
+    log_event(logger, "train_start", rows=len(df), cols=X_train.shape[1], alpha=alpha)
 
     model.fit(X_tr, y_tr)
 
@@ -75,37 +70,25 @@ def train_pipeline(
     }
 
     # Save artifacts
-    joblib.dump(
+    write_joblib(
         {
-            "model": model,
+            "model": model, "feature_cols": feature_cols,
             "feature_spec": {"numeric": numerical_features, "categorical": categorical_features},
-            "drop_cols_train": sorted([c for c in ["SK_ID_CURR", "TARGET"] if c in df.columns]),
+            "drop_cols_train": sorted([c for c in ["SK_ID_CURR", "TARGET", "bucket_id"] if c in df.columns]),
         },
-        artifacts_dir + "/model.joblib",
+        artifacts_dir + "model.joblib",
     )
-    joblib.dump(platt, artifacts_dir + "/platt.joblib")
+    write_joblib(platt, artifacts_dir + "platt.joblib")
 
-    with open(artifacts_dir + "/run_summary.json", "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "input_path": input_path,
-                "rows": int(len(df)),
-                "alpha": alpha,
-                "calib_size": calib_size,
-                "metrics": metrics,
-                "bands": {
-                    "A": "[0.00,0.01]",
-                    "B": "(0.01,0.03]",
-                    "C": "(0.03,0.07]",
-                    "D": "(0.07,0.15]",
-                    "E": "(0.15,1.00]",
-                },
-                "score_definition": "score = -ln(PD_calibrated)",
-            },
-            f,
-            ensure_ascii=False,
-            indent=2,
-        )
+    summary_data = {
+        "input_path": input_path,
+        "rows": int(len(df)),
+        "alpha": alpha,
+        "calib_size": calib_size,
+        "metrics": metrics,
+    }
+
+    write_json(summary_data, artifacts_dir + "run_summary.json")
 
     log_event(logger, "train_done", **metrics)
     return metrics
